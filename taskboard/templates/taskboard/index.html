@@ -3,74 +3,50 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskBoard - Zarządzanie zadaniami</title>
+    <title>TaskBoard</title>
     <link rel="stylesheet" href="{% static 'taskboard/style.css' %}">
 </head>
 <body>
-    <header class="app-header">
-        <h1>TaskBoard</h1>
-        <p>Aplikacja do zarządzania listą zadań (Django + JavaScript)</p>
-        <p style="margin-top: 10px;"><a href="/" style="color: #e2e8f0; text-decoration: underline; font-size: 0.9rem;">&larr; Strona główna</a></p>
-    </header>
 
-    <main class="container">
-        <!-- Kontener na komunikaty błędów / sukcesów API -->
-        <div id="message-container" class="message-container hidden" role="alert"></div>
+<header>
+    <h1>Aplikacja TaskBoard</h1>
+    <nav>
+        <a href="/">Strona główna</a>
+        <a href="/taskboard/">TaskBoard</a>
+    </nav>
+</header>
 
-        <!-- Formularz dodawania zadania -->
-        <section class="card form-card">
-            <h2>Dodaj nowe zadanie</h2>
-            <form id="task-form">
-                {% csrf_token %}
-                <div class="input-group">
-                    <input 
-                        type="text" 
-                        id="task-input" 
-                        placeholder="Wpisz treść zadania..." 
-                        autocomplete="off"
-                    >
-                    <button type="submit" id="add-task-btn" class="btn btn-primary">Dodaj</button>
-                </div>
-                <div id="validation-error" class="validation-message hidden"></div>
-            </form>
-        </section>
+<main>
+    <h2>Lista zadań</h2>
 
-        <!-- Panel podsumowania i filtrów -->
-        <section class="card controls-card">
-            <div class="summary-section">
-                <div class="stat-badge">
-                    <span class="stat-label">Wszystkie zadania:</span>
-                    <strong id="total-count" class="stat-value">0</strong>
-                </div>
-                <div class="stat-badge">
-                    <span class="stat-label">Ukończone:</span>
-                    <strong id="completed-count" class="stat-value">0</strong>
-                </div>
-            </div>
+    <div id="message-container" class="message hidden"></div>
 
-            <div class="filters-section">
-                <span class="filter-label">Filtruj:</span>
-                <div class="filter-buttons">
-                    <button type="button" class="btn btn-filter active" data-filter="all">Wszystkie</button>
-                    <button type="button" class="btn btn-filter" data-filter="active">Aktywne</button>
-                    <button type="button" class="btn btn-filter" data-filter="completed">Ukończone</button>
-                </div>
-            </div>
-        </section>
+    <form id="task-form">
+        {% csrf_token %}
+        <input type="text" id="task-input" placeholder="Wpisz treść zadania...">
+        <button type="submit" id="add-task-btn">Dodaj zadanie</button>
+        <p id="validation-error" class="error-msg hidden"></p>
+    </form>
 
-        <!-- Lista zadań -->
-        <section class="card list-card">
-            <h2>Lista zadań</h2>
-            <p id="empty-state" class="empty-state hidden">Brak zadań do wyświetlenia.</p>
-            <ul id="tasks-list" class="tasks-list"></ul>
-        </section>
-    </main>
+    <div class="summary">
+        <p>Wszystkie zadania: <strong id="total-count">0</strong> | Ukończone: <strong id="completed-count">0</strong></p>
+    </div>
 
-    <footer class="app-footer">
-        <p>&copy; 2026 TaskBoard &bull; Programowanie internetowe</p>
-    </footer>
+    <div class="filters">
+        <span>Filtruj:</span>
+        <button type="button" class="btn-filter active" data-filter="all">Wszystkie</button>
+        <button type="button" class="btn-filter" data-filter="active">Aktywne</button>
+        <button type="button" class="btn-filter" data-filter="completed">Ukończone</button>
+    </div>
 
-    <script src="{% static 'taskboard/app.js' %}"></script>
+    <p id="empty-state" class="hidden">Brak zadań.</p>
+    <ul id="tasks-list"></ul>
+</main>
+
+<footer>
+    <p>&copy; 2026 Autor: Jan Kowalski</p>
+</footer>
+
+<script src="{% static 'taskboard/app.js' %}"></script>
 </body>
 </html>
