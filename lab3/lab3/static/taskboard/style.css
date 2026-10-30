@@ -1,0 +1,219 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f4f6;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #2b6cb0;
+    color: white;
+    text-align: center;
+    padding: 1em;
+}
+
+nav a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+main {
+    max-width: 650px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+h2 {
+    color: #2b6cb0;
+    margin-top: 0;
+}
+
+/* Formularz */
+form {
+    margin-bottom: 15px;
+}
+
+input[type="text"] {
+    padding: 7px 10px;
+    width: 65%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95em;
+    box-sizing: border-box;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #2b6cb0;
+}
+
+/* Ogólne style przycisków */
+button {
+    font-family: inherit;
+    font-size: 0.9em;
+    padding: 7px 14px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    background-color: #edf2f7;
+    color: #2d3748;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #e2e8f0;
+}
+
+/* Główny przycisk "Dodaj zadanie" */
+#add-task-btn {
+    background-color: #2b6cb0;
+    border-color: #2b6cb0;
+    color: white;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+#add-task-btn:hover {
+    background-color: #23558c;
+    border-color: #23558c;
+}
+
+/* Sekcja podsumowania i filtrów */
+.summary {
+    margin: 15px 0 10px 0;
+    color: #4a5568;
+}
+
+.summary strong {
+    color: #2b6cb0;
+}
+
+.filters {
+    margin-bottom: 15px;
+}
+
+.filters span {
+    margin-right: 6px;
+    color: #4a5568;
+}
+
+.btn-filter {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e0;
+    color: #4a5568;
+    padding: 5px 12px;
+    margin-right: 4px;
+}
+
+.btn-filter:hover {
+    background-color: #f7fafc;
+}
+
+.btn-filter.active {
+    background-color: #2b6cb0;
+    border-color: #2b6cb0;
+    color: white;
+    font-weight: bold;
+}
+
+/* Lista zadań */
+ul#tasks-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#tasks-list li {
+    padding: 10px 6px;
+    border-bottom: 1px solid #edf2f7;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.task-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.task-checkbox {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+li.completed span.task-title {
+    text-decoration: line-through;
+    color: #a0aec0;
+}
+
+/* Przyciski w wierszu zadania */
+.task-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-status {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e0;
+    color: #4a5568;
+    padding: 4px 10px;
+    font-size: 0.85em;
+}
+
+.btn-status:hover {
+    background-color: #edf2f7;
+}
+
+.btn-delete {
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+    color: #c53030;
+    padding: 4px 10px;
+    font-size: 0.85em;
+}
+
+.btn-delete:hover {
+    background-color: #fed7d7;
+}
+
+/* Komunikaty */
+.error-msg {
+    color: #e53e3e;
+    font-size: 0.9em;
+    margin: 6px 0 0 0;
+}
+
+.message {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+    background-color: #edf2f7;
+    font-size: 0.9em;
+}
+
+.message.error {
+    color: #c53030;
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+}
+
+.hidden {
+    display: none;
+}
+
+footer {
+    text-align: center;
+    padding: 1.5em;
+    color: #718096;
+    font-size: 0.85em;
+}

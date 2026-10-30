@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalog Gier</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: Arial, sans-serif;
+            color: #2d3748;
+            background: #f3f4f6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background-color: #f3f4f6;
+            line-height: 1.6;
+        }
+
+        header {
+            padding: 1.5em 1em;
+            color: white;
+            text-align: center;
+            background-color: #2b6cb0;
+        }
+
+        h1 {
+            margin: 0 0 0.5em;
+            font-size: 1.8rem;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        nav a {
+            padding: 6px 14px;
+            border-radius: 4px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        nav a:hover,
+        nav a[aria-current="page"] {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            margin: 0 0 0.35rem;
+            color: #2b6cb0;
+        }
+
+        .description {
+            margin-top: 0;
+            color: #4a5568;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        label {
+            color: #4a5568;
+            font-weight: bold;
+        }
+
+        select,
+        button {
+            min-height: 38px;
+            padding: 7px 14px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font: inherit;
+        }
+
+        select {
+            color: #2d3748;
+            background-color: #fff;
+        }
+
+        button {
+            border-color: #2b6cb0;
+            background-color: #2b6cb0;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            border-color: #23558c;
+            background-color: #23558c;
+        }
+
+        .message {
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            border: 1px solid #bee3f8;
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+        }
+
+        .error {
+            border: 1px solid #feb2b2;
+            background-color: #fff5f5;
+            color: #c53030;
+        }
+
+        .empty {
+            border: 1px solid #f6e05e;
+            background-color: #fffff0;
+            color: #744210;
+        }
+
+        .game-card {
+            margin-bottom: 12px;
+            padding: 16px 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+
+        .game-title {
+            margin: 0 0 6px;
+            color: #2b6cb0;
+            font-size: 1.2em;
+        }
+
+        .game-meta {
+            margin-bottom: 8px;
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .game-desc {
+            margin: 0;
+            color: #4a5568;
+            line-height: 1.4;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+
+        .badge-multi {
+            background-color: #c6f6d5;
+            color: #276749;
+        }
+
+        .badge-single {
+            background-color: #edf2f7;
+            color: #4a5568;
+        }
+
+        footer {
+            padding: 1.5rem 1rem;
+            color: #718096;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+
+            nav a {
+                display: block;
+                width: 100%;
+                max-width: 220px;
+                background-color: rgba(255, 255, 255, 0.15);
+            }
+
+            main {
+                margin: 1rem;
+                padding: 1.2rem;
+            }
+
+            .controls {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            select,
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Aplikacja Django</h1>
+        <nav>
+            <a href="/">Strona główna</a>
+            <a href="/taskboard/">TaskBoard</a>
+            <a href="/games/" aria-current="page">Gry</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Katalog gier</h2>
+        <p class="description">Przeglądaj i filtruj bazę gier komputerowych.</p>
+
+        <div class="controls">
+            <label for="multiplayer-filter">Filtr:</label>
+            <select id="multiplayer-filter">
+                <option value="">Wszystkie gry</option>
+                <option value="true">Tylko multiplayer</option>
+                <option value="false">Tylko dla jednego gracza</option>
+            </select>
+            <button id="load-btn">Wczytaj dane</button>
+        </div>
+
+        <div id="status-container"></div>
+        <div id="games-container">        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Autor: Jakub Olejnik</p>
+    </footer>
+
+    <script>
+        const loadBtn = document.getElementById('load-btn');
+        const filterSelect = document.getElementById('multiplayer-filter');
+        const statusContainer = document.getElementById('status-container');
+        const gamesContainer = document.getElementById('games-container');
+
+        loadBtn.addEventListener('click', () => {
+            const filterValue = filterSelect.value;
+            let url = '/games/api/';
+            if (filterValue !== '') {
+                url += `?multiplayer=${filterValue}`;
+            }
+
+            // Komunikat o ładowaniu i czyszczenie widoku
+            statusContainer.className = 'message loading';
+            statusContainer.textContent = 'Ładowanie danych z serwera...';
+            gamesContainer.replaceChildren();
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Błąd HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Usunięcie komunikatu o ładowaniu
+                    statusContainer.className = '';
+                    statusContainer.textContent = '';
+
+                    const items = data.items || [];
+                    if (items.length === 0) {
+                        statusContainer.className = 'message empty';
+                        statusContainer.textContent = 'Brak gier spełniających wybrane kryteria.';
+                        return;
+                    }
+
+                    // Bezpieczna aktualizacja DOM (textContent)
+                    items.forEach(game => {
+                        const card = document.createElement('div');
+                        card.className = 'game-card';
+
+                        const title = document.createElement('h3');
+                        title.className = 'game-title';
+                        title.textContent = game.title;
+
+                        const badge = document.createElement('span');
+                        badge.className = game.is_multiplayer ? 'badge badge-multi' : 'badge badge-single';
+                        badge.textContent = game.is_multiplayer ? 'Multiplayer' : 'Singleplayer';
+                        title.appendChild(badge);
+
+                        const meta = document.createElement('div');
+                        meta.className = 'game-meta';
+                        meta.textContent = `Gatunek: ${game.genre} | Rok wydania: ${game.release_year}`;
+
+                        const desc = document.createElement('p');
+                        desc.className = 'game-desc';
+                        desc.textContent = game.description;
+
+                        card.appendChild(title);
+                        card.appendChild(meta);
+                        card.appendChild(desc);
+
+                        gamesContainer.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    statusContainer.className = 'message error';
+                    statusContainer.textContent = `Wystąpił błąd podczas pobierania danych: ${error.message}`;
+                });
+        });
+    </script>
+</body>
+</html>

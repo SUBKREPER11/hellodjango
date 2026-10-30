@@ -1,0 +1,15 @@
+from django.db import models
+
+
+class Game(models.Model):
+    title = models.CharField(max_length=100)
+    genre = models.CharField(max_length=50)
+    release_year = models.IntegerField()
+    description = models.TextField()
+    is_multiplayer = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'games_game'
+
+    def __str__(self):
+        return f"{self.title} ({self.release_year})"

@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>TaskBoard</title>
+    <link rel="stylesheet" href="{% static 'taskboard/style.css' %}">
+</head>
+<body>
+
+<header>
+    <h1>Aplikacja TaskBoard</h1>
+    <nav>
+        <a href="/">Strona główna</a>
+        <a href="/taskboard/">TaskBoard</a>
+    </nav>
+</header>
+
+<main>
+    <h2>Lista zadań</h2>
+
+    <div id="message-container" class="message hidden"></div>
+
+    <form id="task-form">
+        {% csrf_token %}
+        <input type="text" id="task-input" placeholder="Wpisz treść zadania...">
+        <button type="submit" id="add-task-btn">Dodaj zadanie</button>
+        <p id="validation-error" class="error-msg hidden"></p>
+    </form>
+
+    <div class="summary">
+        <p>Wszystkie zadania: <strong id="total-count">0</strong> | Ukończone: <strong id="completed-count">0</strong></p>
+    </div>
+
+    <div class="filters">
+        <span>Filtruj:</span>
+        <button type="button" class="btn-filter active" data-filter="all">Wszystkie</button>
+        <button type="button" class="btn-filter" data-filter="active">Aktywne</button>
+        <button type="button" class="btn-filter" data-filter="completed">Ukończone</button>
+    </div>
+
+    <p id="empty-state" class="hidden">Brak zadań.</p>
+    <ul id="tasks-list"></ul>
+</main>
+
+<footer>
+    <p>&copy; 2026 Autor: Jakub Olejnik</p>
+</footer>
+
+<script src="{% static 'taskboard/app.js' %}"></script>
+</body>
+</html>
