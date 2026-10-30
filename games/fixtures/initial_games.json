@@ -1,0 +1,68 @@
+[
+  {
+    "model": "games.game",
+    "pk": 1,
+    "fields": {
+      "title": "Wiedźmin 3: Dziki Gon",
+      "genre": "RPG",
+      "release_year": 2015,
+      "description": "Przygody wiedźmina Geralta w otwartym świecie fantasy.",
+      "is_multiplayer": false
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 2,
+    "fields": {
+      "title": "Cyberpunk 2077",
+      "genre": "Action RPG",
+      "release_year": 2020,
+      "description": "Gra osadzona w futurystycznym Night City.",
+      "is_multiplayer": false
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 3,
+    "fields": {
+      "title": "Minecraft",
+      "genre": "Sandbox",
+      "release_year": 2011,
+      "description": "Gra o budowaniu i eksploracji wokselowego świata.",
+      "is_multiplayer": true
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 4,
+    "fields": {
+      "title": "Counter-Strike 2",
+      "genre": "FPS",
+      "release_year": 2023,
+      "description": "Taktyczna strzelanka drużynowa.",
+      "is_multiplayer": true
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 5,
+    "fields": {
+      "title": "Hollow Knight",
+      "genre": "Metroidvania",
+      "release_year": 2017,
+      "description": "Dwuwymiarowa gra akcji w podziemnym królestwie robali.",
+      "is_multiplayer": false
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 6,
+    "fields": {
+      "title": "Baldurs Gate 3",
+      "genre": "cRPG",
+      "release_year": 2023,
+      "description": "Taktyczna gra fabularna oparta na zasadach D&D.",
+      "is_multiplayer": true
+    }
+  }
+]

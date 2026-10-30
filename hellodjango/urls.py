@@ -16,9 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from games.views import api_games
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('games/', include('games.urls')),
+    path('api/games/', api_games, name='root_api_games'),
     path('', include('taskboard.urls')),
     path('', include('frontend_demo.urls')),
     path('', include('witaj.urls')),
