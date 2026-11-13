@@ -7,7 +7,10 @@
       "genre": "RPG",
       "release_year": 2015,
       "description": "Przygody wiedźmina Geralta w otwartym świecie fantasy.",
-      "is_multiplayer": false
+      "is_multiplayer": false,
+      "platform": "PC / Konsole",
+      "rating": "9.8",
+      "status": "released"
     }
   },
   {
@@ -18,7 +21,10 @@
       "genre": "Action RPG",
       "release_year": 2020,
       "description": "Gra osadzona w futurystycznym Night City.",
-      "is_multiplayer": false
+      "is_multiplayer": false,
+      "platform": "PC / Konsole",
+      "rating": "8.9",
+      "status": "released"
     }
   },
   {
@@ -28,8 +34,11 @@
       "title": "Minecraft",
       "genre": "Sandbox",
       "release_year": 2011,
-      "description": "Gra o budowaniu i eksploracji wokselowego świata.",
-      "is_multiplayer": true
+      "description": "Gra o budowaniu i eksploracji świata.",
+      "is_multiplayer": true,
+      "platform": "Multiplatforma",
+      "rating": "9.2",
+      "status": "released"
     }
   },
   {
@@ -40,7 +49,10 @@
       "genre": "FPS",
       "release_year": 2023,
       "description": "Taktyczna strzelanka drużynowa.",
-      "is_multiplayer": true
+      "is_multiplayer": true,
+      "platform": "PC",
+      "rating": "8.3",
+      "status": "released"
     }
   },
   {
@@ -51,7 +63,10 @@
       "genre": "Metroidvania",
       "release_year": 2017,
       "description": "Dwuwymiarowa gra akcji w podziemnym królestwie robali.",
-      "is_multiplayer": false
+      "is_multiplayer": false,
+      "platform": "PC / Switch",
+      "rating": "9.4",
+      "status": "released"
     }
   },
   {
@@ -62,7 +77,38 @@
       "genre": "cRPG",
       "release_year": 2023,
       "description": "Taktyczna gra fabularna oparta na zasadach D&D.",
-      "is_multiplayer": true
+      "is_multiplayer": true,
+      "platform": "PC / Konsole",
+      "rating": "9.7",
+      "status": "released"
+    }
+  },
+  {
+    "model": "lab4.game",
+    "pk": 7,
+    "fields": {
+      "title": "Hades II",
+      "genre": "Roguelike",
+      "release_year": 2024,
+      "description": "Kontynuacja dynamicznego roguelike'a w świecie greckiej mitologii.",
+      "is_multiplayer": false,
+      "platform": "PC",
+      "rating": "9.1",
+      "status": "early_access"
+    }
+  },
+  {
+    "model": "lab4.game",
+    "pk": 8,
+    "fields": {
+      "title": "Wiedźmin IV",
+      "genre": "RPG",
+      "release_year": 2027,
+      "description": "Nowa saga w uniwersum Wiedźmina z Ciri w roli głównej.",
+      "is_multiplayer": false,
+      "platform": "PC / Konsole",
+      "rating": null,
+      "status": "upcoming"
     }
   }
 ]
