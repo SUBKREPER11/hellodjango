@@ -40,3 +40,4 @@ staticfiles/
 # Vim swap files
 *.swp
 *~
+wsgi_do_skopiowania.txt

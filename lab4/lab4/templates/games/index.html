@@ -185,6 +185,16 @@
             color: #4a5568;
         }
 
+        .badge-status {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+        }
+
+        .badge-rating {
+            background-color: #fefcbf;
+            color: #975a16;
+        }
+
         footer {
             padding: 1.5rem 1rem;
             color: #718096;
@@ -238,17 +248,35 @@
         <p class="description">Przeglądaj i filtruj bazę gier komputerowych.</p>
 
         <div class="controls">
-            <label for="multiplayer-filter">Filtr:</label>
+            <label for="multiplayer-filter">Tryb:</label>
             <select id="multiplayer-filter">
                 <option value="">Wszystkie gry</option>
                 <option value="true">Tylko multiplayer</option>
                 <option value="false">Tylko dla jednego gracza</option>
             </select>
+
+            <label for="status-filter">Status:</label>
+            <select id="status-filter">
+                <option value="">Wszystkie statusy</option>
+                <option value="released">Wydana</option>
+                <option value="early_access">Wczesny dostęp</option>
+                <option value="upcoming">Zapowiedziana</option>
+            </select>
+
+            <label for="sort-select">Sortowanie:</label>
+            <select id="sort-select">
+                <option value="year_desc">Najnowsze</option>
+                <option value="year_asc">Najstarsze</option>
+                <option value="title">Tytuł A-Z</option>
+                <option value="rating">Najwyższa ocena</option>
+            </select>
+
             <button id="load-btn">Wczytaj dane</button>
+            <button id="top-btn" type="button">Top 3 gry</button>
         </div>
 
         <div id="status-container"></div>
-        <div id="games-container">        </div>
+        <div id="games-container"></div>
     </main>
 
     <footer>
@@ -257,17 +285,14 @@
 
     <script>
         const loadBtn = document.getElementById('load-btn');
+        const topBtn = document.getElementById('top-btn');
         const filterSelect = document.getElementById('multiplayer-filter');
+        const statusSelect = document.getElementById('status-filter');
+        const sortSelect = document.getElementById('sort-select');
         const statusContainer = document.getElementById('status-container');
         const gamesContainer = document.getElementById('games-container');
 
-        loadBtn.addEventListener('click', () => {
-            const filterValue = filterSelect.value;
-            let url = '/games/api/';
-            if (filterValue !== '') {
-                url += `?multiplayer=${filterValue}`;
-            }
-
+        function fetchAndRenderGames(url) {
             // Komunikat o ładowaniu i czyszczenie widoku
             statusContainer.className = 'message loading';
             statusContainer.textContent = 'Ładowanie danych z serwera...';
@@ -306,9 +331,23 @@
                         badge.textContent = game.is_multiplayer ? 'Multiplayer' : 'Singleplayer';
                         title.appendChild(badge);
 
+                        if (game.status_display) {
+                            const statusBadge = document.createElement('span');
+                            statusBadge.className = 'badge badge-status';
+                            statusBadge.textContent = game.status_display;
+                            title.appendChild(statusBadge);
+                        }
+
+                        if (game.rating !== null && game.rating !== undefined) {
+                            const ratingBadge = document.createElement('span');
+                            ratingBadge.className = 'badge badge-rating';
+                            ratingBadge.textContent = `Ocena: ${game.rating}/10`;
+                            title.appendChild(ratingBadge);
+                        }
+
                         const meta = document.createElement('div');
                         meta.className = 'game-meta';
-                        meta.textContent = `Gatunek: ${game.genre} | Rok wydania: ${game.release_year}`;
+                        meta.textContent = `Gatunek: ${game.genre} | Platforma: ${game.platform || 'PC'} | Rok wydania: ${game.release_year}`;
 
                         const desc = document.createElement('p');
                         desc.className = 'game-desc';
@@ -325,6 +364,27 @@
                     statusContainer.className = 'message error';
                     statusContainer.textContent = `Wystąpił błąd podczas pobierania danych: ${error.message}`;
                 });
+        }
+
+        loadBtn.addEventListener('click', () => {
+            const params = new URLSearchParams();
+            if (filterSelect.value !== '') {
+                params.set('multiplayer', filterSelect.value);
+            }
+            if (statusSelect.value !== '') {
+                params.set('status', statusSelect.value);
+            }
+            if (sortSelect.value !== '') {
+                params.set('sort', sortSelect.value);
+            }
+
+            const query = params.toString();
+            const url = query ? `/games/api/?${query}` : '/games/api/';
+            fetchAndRenderGames(url);
+        });
+
+        topBtn.addEventListener('click', () => {
+            fetchAndRenderGames('/games/api/top/');
         });
     </script>
 </body>
