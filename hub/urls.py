@@ -6,13 +6,15 @@ urlpatterns = [
     # Panel administratora (jeden, unikalny w całym projekcie)
     path('admin/', admin.site.urls),
 
-    # Gry (Lab 4 / Lab 5)
+    # Gry (Lab 4 / Lab 5 / Lab 6)
     path('games/', lab4_views.index, name='games_index'),
     path('games/api/', lab4_views.api_games, name='games_api_sub'),
     path('games/api/top/', lab4_views.api_games_top, name='games_api_sub_top'),
+    path('games/api/add/', lab4_views.api_game_add, name='games_api_sub_add'),
     path('games/api/<int:game_id>/', lab4_views.api_game_detail, name='games_api_sub_detail'),
     path('api/games/', lab4_views.api_games, name='games_api_root'),
     path('api/games/top/', lab4_views.api_games_top, name='games_api_root_top'),
+    path('api/games/add/', lab4_views.api_game_add, name='games_api_root_add'),
     path('api/games/<int:game_id>/', lab4_views.api_game_detail, name='games_api_root_detail'),
 
     # Taskboard (Lab 3)
@@ -32,6 +34,7 @@ urlpatterns = [
         path('', lab4_views.index),
         path('api/', lab4_views.api_games),
         path('api/top/', lab4_views.api_games_top),
+        path('api/add/', lab4_views.api_game_add),
         path('api/<int:game_id>/', lab4_views.api_game_detail),
     ])),
 ]

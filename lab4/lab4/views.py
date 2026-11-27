@@ -1,7 +1,11 @@
+import json
 from decimal import Decimal, InvalidOperation
+from django.core.exceptions import ValidationError
+from django.db import DatabaseError, IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET, require_POST
 from .models import Game
 
 SORT_OPTIONS = {
@@ -18,7 +22,11 @@ VALID_STATUSES = {
     Game.STATUS_UPCOMING,
 }
 
+MIN_RELEASE_YEAR = 1950
+MAX_RELEASE_YEAR = 2100
 
+
+@ensure_csrf_cookie
 def index(request):
     return render(request, 'games/index.html')
 
@@ -98,3 +106,162 @@ def api_games_top(request):
         .order_by('-rating', 'title')[:3]
     )
     return JsonResponse({'items': [game.to_dict() for game in top_games]})
+
+
+def _parse_text_field(data, key, label, required=True, max_length=None, default=''):
+    """Waliduje i zwraca pole tekstowe z obiektu JSON."""
+    raw = data.get(key)
+    if raw is None:
+        if required:
+            return None, f'Pole „{label}” jest wymagane.'
+        return default, None
+    if not isinstance(raw, str):
+        return None, f'Pole „{label}” musi być tekstem.'
+    value = raw.strip()
+    if not value:
+        if required:
+            return None, f'Pole „{label}” nie może być puste.'
+        return default, None
+    if max_length is not None and len(value) > max_length:
+        return None, f'Pole „{label}” może mieć maksymalnie {max_length} znaków.'
+    return value, None
+
+
+def _parse_release_year(raw):
+    """Waliduje rok wydania gry jako liczbę całkowitą z dopuszczalnego zakresu."""
+    if raw is None or isinstance(raw, bool):
+        return None, 'Podaj poprawny rok wydania.'
+    if isinstance(raw, str):
+        raw = raw.strip()
+        if not raw:
+            return None, 'Pole „Rok wydania” jest wymagane.'
+    elif isinstance(raw, float) and not raw.is_integer():
+        return None, 'Rok wydania musi być liczbą całkowitą.'
+    try:
+        year = int(raw)
+    except (TypeError, ValueError):
+        return None, 'Rok wydania musi być liczbą całkowitą.'
+    if not (MIN_RELEASE_YEAR <= year <= MAX_RELEASE_YEAR):
+        return None, f'Rok wydania musi mieścić się w zakresie {MIN_RELEASE_YEAR}–{MAX_RELEASE_YEAR}.'
+    return year, None
+
+
+def _parse_rating(raw):
+    """Waliduje opcjonalną ocenę gry z zakresu 0–10 (maksymalnie 1 miejsce po przecinku)."""
+    if raw is None or (isinstance(raw, str) and not raw.strip()):
+        return None, None
+    if isinstance(raw, bool):
+        return None, 'Ocena musi być liczbą z zakresu 0–10.'
+    try:
+        rating = Decimal(str(raw).strip())
+    except (InvalidOperation, ValueError):
+        return None, 'Ocena musi być poprawną liczbą z zakresu 0–10.'
+    if not rating.is_finite() or rating < Decimal('0') or rating > Decimal('10'):
+        return None, 'Ocena musi mieścić się w zakresie od 0 do 10.'
+    exponent = rating.as_tuple().exponent
+    if isinstance(exponent, int) and exponent < -1:
+        return None, 'Ocena może mieć maksymalnie jedno miejsce po przecinku.'
+    return rating, None
+
+
+def _parse_multiplayer(raw):
+    """Konwertuje i waliduje wartość logiczną trybu multiplayer."""
+    if raw is None:
+        return False, None
+    if isinstance(raw, bool):
+        return raw, None
+    if isinstance(raw, str):
+        normalized = raw.strip().lower()
+        if normalized in {'true', 'on', '1', 'tak'}:
+            return True, None
+        if normalized in {'false', 'off', '0', 'nie', ''}:
+            return False, None
+    return None, 'Nieprawidłowa wartość pola „Tryb multiplayer”.'
+
+
+def _validate_game_payload(data):
+    """Waliduje wszystkie pola wejściowe dla nowej gry i zwraca (cleaned_data, error)."""
+    title, err = _parse_text_field(data, 'title', 'Tytuł gry', required=True, max_length=100)
+    if err:
+        return None, err
+
+    genre, err = _parse_text_field(data, 'genre', 'Gatunek', required=True, max_length=50)
+    if err:
+        return None, err
+
+    release_year, err = _parse_release_year(data.get('release_year'))
+    if err:
+        return None, err
+
+    description, err = _parse_text_field(data, 'description', 'Opis', required=True, max_length=5000)
+    if err:
+        return None, err
+
+    platform, err = _parse_text_field(
+        data, 'platform', 'Platforma', required=False, max_length=50, default='PC'
+    )
+    if err:
+        return None, err
+
+    status, err = _parse_text_field(
+        data, 'status', 'Status', required=False, max_length=20, default=Game.STATUS_RELEASED
+    )
+    if err:
+        return None, err
+    if status not in VALID_STATUSES:
+        return None, 'Nieprawidłowy status gry.'
+
+    rating, err = _parse_rating(data.get('rating'))
+    if err:
+        return None, err
+
+    is_multiplayer, err = _parse_multiplayer(data.get('is_multiplayer'))
+    if err:
+        return None, err
+
+    return {
+        'title': title,
+        'genre': genre,
+        'release_year': release_year,
+        'description': description,
+        'platform': platform,
+        'status': status,
+        'rating': rating,
+        'is_multiplayer': is_multiplayer,
+    }, None
+
+
+@require_POST
+def api_game_add(request):
+    """Obsługuje dodanie nowej gry przez JSON POST oraz zapis przez ORM."""
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse({'ok': False, 'error': 'Niepoprawny format danych JSON.'}, status=400)
+
+    if not isinstance(data, dict):
+        return JsonResponse({'ok': False, 'error': 'Oczekiwano obiektu JSON.'}, status=400)
+
+    cleaned_data, error = _validate_game_payload(data)
+    if error:
+        return JsonResponse({'ok': False, 'error': error}, status=400)
+
+    try:
+        game = Game(**cleaned_data)
+        game.full_clean()
+        game.save()
+    except (ValidationError, IntegrityError, DatabaseError):
+        return JsonResponse(
+            {'ok': False, 'error': 'Nie udało się zapisać gry w bazie danych.'},
+            status=400,
+        )
+
+    return JsonResponse(
+        {
+            'ok': True,
+            'id': game.id,
+            'item': game.to_dict(),
+            'message': f'Dodano grę „{game.title}”.',
+        },
+        status=201,
+    )

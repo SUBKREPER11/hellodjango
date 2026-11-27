@@ -1,5 +1,6 @@
+import json
 from decimal import Decimal
-from django.test import TestCase
+from django.test import Client, TestCase
 from .models import Game
 
 
@@ -101,3 +102,160 @@ class GameLab5Tests(TestCase):
     def test_api_games_invalid_params(self):
         self.assertEqual(self.client.get('/games/api/?limit=abc').status_code, 400)
         self.assertEqual(self.client.get('/games/api/?min_rating=xyz').status_code, 400)
+
+
+class GameLab6ApiAddTests(TestCase):
+    """Testy formularza, walidacji, CSRF oraz endpointu POST JSON dla Lab 6."""
+
+    def setUp(self):
+        self.add_url = '/games/api/add/'
+        self.valid_payload = {
+            'title': 'Cyberpunk 2077',
+            'genre': 'Action RPG',
+            'release_year': 2020,
+            'platform': 'PC / Konsole',
+            'status': Game.STATUS_RELEASED,
+            'rating': '8.9',
+            'is_multiplayer': False,
+            'description': 'Futurystyczna gra RPG w Night City.',
+        }
+
+    def test_games_index_contains_form_and_csrf(self):
+        response = self.client.get('/games/')
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode('utf-8')
+        self.assertIn('id="game-form"', html)
+        self.assertIn('name="csrfmiddlewaretoken"', html)
+        self.assertIn('name="title"', html)
+        self.assertIn('name="genre"', html)
+        self.assertIn('name="release_year"', html)
+        self.assertIn('name="description"', html)
+        self.assertIn('id="form-message"', html)
+
+    def test_add_game_valid_full_and_minimal_payload(self):
+        response = self.client.post(
+            self.add_url,
+            data=json.dumps(self.valid_payload),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 201)
+        body = response.json()
+        self.assertTrue(body['ok'])
+        self.assertEqual(body['item']['title'], 'Cyberpunk 2077')
+        self.assertEqual(body['item']['rating'], 8.9)
+        self.assertEqual(Game.objects.count(), 1)
+
+        minimal_payload = {
+            'title': 'Portal 2',
+            'genre': 'Puzzle',
+            'release_year': '2011',
+            'description': 'Gra logiczna z portalami.',
+        }
+        minimal_resp = self.client.post(
+            '/api/games/add/',
+            data=json.dumps(minimal_payload),
+            content_type='application/json',
+        )
+        self.assertEqual(minimal_resp.status_code, 201)
+        created = Game.objects.get(pk=minimal_resp.json()['id'])
+        self.assertEqual(created.platform, 'PC')
+        self.assertEqual(created.status, Game.STATUS_RELEASED)
+        self.assertFalse(created.is_multiplayer)
+        self.assertIsNone(created.rating)
+
+    def test_add_game_missing_or_empty_required_fields(self):
+        for field in ('title', 'genre', 'release_year', 'description'):
+            payload = dict(self.valid_payload)
+            del payload[field]
+            resp = self.client.post(
+                self.add_url,
+                data=json.dumps(payload),
+                content_type='application/json',
+            )
+            self.assertEqual(resp.status_code, 400)
+            self.assertFalse(resp.json()['ok'])
+            self.assertTrue(resp.json()['error'])
+
+        empty_title = dict(self.valid_payload, title='   ')
+        resp = self.client.post(
+            self.add_url,
+            data=json.dumps(empty_title),
+            content_type='application/json',
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(resp.json()['ok'])
+        self.assertEqual(Game.objects.count(), 0)
+
+    def test_add_game_invalid_json_and_invalid_values(self):
+        bad_json_resp = self.client.post(
+            self.add_url,
+            data='{niepoprawny json',
+            content_type='application/json',
+        )
+        self.assertEqual(bad_json_resp.status_code, 400)
+        self.assertFalse(bad_json_resp.json()['ok'])
+
+        list_json_resp = self.client.post(
+            self.add_url,
+            data=json.dumps(['not', 'an', 'object']),
+            content_type='application/json',
+        )
+        self.assertEqual(list_json_resp.status_code, 400)
+        self.assertFalse(list_json_resp.json()['ok'])
+
+        invalid_variants = [
+            {'release_year': 'abc'},
+            {'release_year': 1900},
+            {'release_year': True},
+            {'rating': '10.5'},
+            {'rating': '-0.5'},
+            {'rating': '8.55'},
+            {'rating': 'wysoka'},
+            {'status': 'archived'},
+            {'title': 'A' * 101},
+        ]
+        for overrides in invalid_variants:
+            payload = dict(self.valid_payload, **overrides)
+            resp = self.client.post(
+                self.add_url,
+                data=json.dumps(payload),
+                content_type='application/json',
+            )
+            self.assertEqual(resp.status_code, 400, msg=f'Oczekiwano 400 dla {overrides}')
+            self.assertFalse(resp.json()['ok'])
+
+        self.assertEqual(Game.objects.count(), 0)
+
+    def test_add_game_requires_post(self):
+        response = self.client.get(self.add_url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_add_game_csrf_protection(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+
+        no_csrf_resp = csrf_client.post(
+            self.add_url,
+            data=json.dumps(self.valid_payload),
+            content_type='application/json',
+        )
+        self.assertEqual(no_csrf_resp.status_code, 403)
+
+        bad_csrf_resp = csrf_client.post(
+            self.add_url,
+            data=json.dumps(self.valid_payload),
+            content_type='application/json',
+            HTTP_X_CSRFTOKEN='nieprawidlowy-token',
+        )
+        self.assertEqual(bad_csrf_resp.status_code, 403)
+
+        csrf_client.get('/games/')
+        csrf_token = csrf_client.cookies['csrftoken'].value
+        valid_csrf_resp = csrf_client.post(
+            self.add_url,
+            data=json.dumps(self.valid_payload),
+            content_type='application/json',
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+        self.assertEqual(valid_csrf_resp.status_code, 201)
+        self.assertTrue(valid_csrf_resp.json()['ok'])
+        self.assertEqual(Game.objects.count(), 1)

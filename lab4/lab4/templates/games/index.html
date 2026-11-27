@@ -87,6 +87,9 @@
         }
 
         select,
+        input[type="text"],
+        input[type="number"],
+        textarea,
         button {
             min-height: 38px;
             padding: 7px 14px;
@@ -95,9 +98,63 @@
             font: inherit;
         }
 
-        select {
+        select,
+        input[type="text"],
+        input[type="number"],
+        textarea {
             color: #2d3748;
             background-color: #fff;
+        }
+
+        .form-section {
+            margin: 1.5rem 0 2rem;
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background-color: #f8fafc;
+        }
+
+        .form-section h3 {
+            margin: 0 0 1rem;
+            color: #2b6cb0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px 16px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-field-full {
+            grid-column: 1 / -1;
+        }
+
+        .checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .form-actions {
+            margin-top: 12px;
+        }
+
+        .success {
+            border: 1px solid #9ae6b4;
+            background-color: #f0fff4;
+            color: #276749;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         button {
@@ -230,6 +287,10 @@
             button {
                 width: 100%;
             }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -245,7 +306,66 @@
 
     <main>
         <h2>Katalog gier</h2>
-        <p class="description">Przeglądaj i filtruj bazę gier komputerowych.</p>
+        <p class="description">Przeglądaj, filtruj oraz dodawaj nowe gry do bazy bez przeładowania strony.</p>
+
+        <section class="form-section" aria-labelledby="add-game-heading">
+            <h3 id="add-game-heading">Dodaj nową grę</h3>
+            <form id="game-form">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="game-title">Tytuł gry</label>
+                        <input id="game-title" type="text" name="title" maxlength="100" required placeholder="np. Wiedźmin 3: Dziki Gon">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="game-genre">Gatunek</label>
+                        <input id="game-genre" type="text" name="genre" maxlength="50" required placeholder="np. RPG">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="game-year">Rok wydania</label>
+                        <input id="game-year" type="number" name="release_year" min="1950" max="2100" required placeholder="np. 2015">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="game-platform">Platforma</label>
+                        <input id="game-platform" type="text" name="platform" maxlength="50" value="PC" placeholder="np. PC / PS5">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="game-status">Status</label>
+                        <select id="game-status" name="status">
+                            <option value="released">Wydana</option>
+                            <option value="early_access">Wczesny dostęp</option>
+                            <option value="upcoming">Zapowiedziana</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="game-rating">Ocena (0–10, opcjonalnie)</label>
+                        <input id="game-rating" type="number" name="rating" min="0" max="10" step="0.1" placeholder="np. 9.5">
+                    </div>
+
+                    <div class="form-field form-field-full">
+                        <label for="game-description">Opis</label>
+                        <textarea id="game-description" name="description" rows="3" maxlength="5000" required placeholder="Krótki opis gry..."></textarea>
+                    </div>
+
+                    <div class="form-field form-field-full">
+                        <label class="checkbox-label">
+                            <input id="game-multiplayer" type="checkbox" name="is_multiplayer">
+                            Tryb multiplayer
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submit-btn">Dodaj</button>
+                </div>
+            </form>
+            <p id="form-message" role="status"></p>
+        </section>
 
         <div class="controls">
             <label for="multiplayer-filter">Tryb:</label>
@@ -284,6 +404,9 @@
     </footer>
 
     <script>
+        const gameForm = document.getElementById('game-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const formMessage = document.getElementById('form-message');
         const loadBtn = document.getElementById('load-btn');
         const topBtn = document.getElementById('top-btn');
         const filterSelect = document.getElementById('multiplayer-filter');
@@ -291,6 +414,27 @@
         const sortSelect = document.getElementById('sort-select');
         const statusContainer = document.getElementById('status-container');
         const gamesContainer = document.getElementById('games-container');
+
+        function buildGamesApiUrl() {
+            const params = new URLSearchParams();
+            if (filterSelect.value !== '') {
+                params.set('multiplayer', filterSelect.value);
+            }
+            if (statusSelect.value !== '') {
+                params.set('status', statusSelect.value);
+            }
+            if (sortSelect.value !== '') {
+                params.set('sort', sortSelect.value);
+            }
+
+            const query = params.toString();
+            return query ? `/games/api/?${query}` : '/games/api/';
+        }
+
+        function showFormMessage(text, type) {
+            formMessage.className = type ? `message ${type}` : '';
+            formMessage.textContent = text;
+        }
 
         function fetchAndRenderGames(url) {
             // Komunikat o ładowaniu i czyszczenie widoku
@@ -366,26 +510,70 @@
                 });
         }
 
-        loadBtn.addEventListener('click', () => {
-            const params = new URLSearchParams();
-            if (filterSelect.value !== '') {
-                params.set('multiplayer', filterSelect.value);
-            }
-            if (statusSelect.value !== '') {
-                params.set('status', statusSelect.value);
-            }
-            if (sortSelect.value !== '') {
-                params.set('sort', sortSelect.value);
-            }
+        gameForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
 
-            const query = params.toString();
-            const url = query ? `/games/api/?${query}` : '/games/api/';
-            fetchAndRenderGames(url);
+            const formData = new FormData(gameForm);
+            const data = Object.fromEntries(formData.entries());
+            delete data.csrfmiddlewaretoken;
+            data.is_multiplayer = gameForm.querySelector('[name="is_multiplayer"]').checked;
+
+            const csrfInput = gameForm.querySelector('[name="csrfmiddlewaretoken"]');
+            const csrf = csrfInput ? csrfInput.value : '';
+
+            submitBtn.disabled = true;
+            showFormMessage('Wysyłanie danych...', 'loading');
+
+            try {
+                const response = await fetch('/games/api/add/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrf,
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                let result = null;
+                try {
+                    result = await response.json();
+                } catch (_) {
+                    result = null;
+                }
+
+                if (!response.ok || !result || !result.ok) {
+                    throw new Error((result && result.error) || `Nie udało się dodać gry (HTTP ${response.status}).`);
+                }
+
+                showFormMessage(result.message || 'Gra została pomyślnie dodana.', 'success');
+                gameForm.reset();
+
+                // Jeśli aktywne filtry ukryłyby nowy rekord, zresetuj je przed odświeżeniem listy.
+                if (filterSelect.value !== '' && String(result.item.is_multiplayer) !== filterSelect.value) {
+                    filterSelect.value = '';
+                }
+                if (statusSelect.value !== '' && result.item.status !== statusSelect.value) {
+                    statusSelect.value = '';
+                }
+
+                fetchAndRenderGames(buildGamesApiUrl());
+            } catch (error) {
+                showFormMessage(error.message || 'Wystąpił błąd podczas zapisywania gry.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        loadBtn.addEventListener('click', () => {
+            fetchAndRenderGames(buildGamesApiUrl());
         });
 
         topBtn.addEventListener('click', () => {
             fetchAndRenderGames('/games/api/top/');
         });
+
+        // Wczytaj aktualną listę gier od razu po załadowaniu strony.
+        fetchAndRenderGames(buildGamesApiUrl());
     </script>
 </body>
 </html>
